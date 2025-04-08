@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -13,18 +15,27 @@ namespace SoftwareReleasePackageBundler
     {
         static bool ProcessFinished = false;
 
+        //Default values - Used to create database if it doesn't exist. Running values are stored in database so you can change them depending on the user
+        static string FileName = @"2.0.0.0.0.0.0";
+        static string APMACS_HMI_Location = @"C:\Users\bdorfner\source\repos\NPAcontrols\APMACShmi\bin";
+        static string APMACS_TC_Location = @"C:\Users\bdorfner\source\repos\APMACS_1\APMACS_1\_Boot\TC";
+        static string Version_Change_Utility_Location = @"C:\Users\bdorfner\source\repos\NPAcontrols\VersionChangeUtility\bin";
+        static string CreateLocation = @"C:\Users\bdorfner\Desktop";
         static void Main(string[] args)
         {
             Console.Title = Assembly.GetExecutingAssembly().GetName().Name + "     " + Assembly.GetExecutingAssembly().GetName().Version;
 
-            Thread thread = new Thread(ThreadFunction);
-            thread.Start();
-
-            Console.Write("Processing");
-            while (!ProcessFinished)
+            if (CheckForDatabase())
             {
-                Console.Write(".");
-                Thread.Sleep(500);
+                Thread thread = new Thread(ThreadFunction);
+                thread.Start();
+
+                Console.Write("Processing");
+                while (!ProcessFinished)
+                {
+                    Console.Write(".");
+                    Thread.Sleep(500);
+                }
             }
 
             Console.ReadKey();
@@ -39,11 +50,11 @@ namespace SoftwareReleasePackageBundler
                 CopyDirectory(@"C:\Users\bdorfner\source\repos\APMACS TwinCAT Shell Project\APMACS Shell Project", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\APMACS TwinCAT Shell Project\APMACS Shell Project");
                 File.Copy(@"C:\Users\bdorfner\source\repos\APMACS TwinCAT Shell Project\APMACS Shell Project.sln", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\APMACS TwinCAT Shell Project\APMACS Shell Project.sln", true);
 
-                if (File.Exists(@"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0.zip"))
+                if (File.Exists(CreateLocation + @"\" + FileName + @".zip"))
                 {
-                    File.Delete(@"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0.zip");
+                    File.Delete(CreateLocation + @"\" + FileName + @".zip");
                 }
-                ZipFile.CreateFromDirectory(@"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0.zip");
+                ZipFile.CreateFromDirectory(CreateLocation + @"\" + FileName + @"\", CreateLocation + @"\" + FileName + @".zip");
 
                 DriveInfo usbDrive = null;
                 foreach (DriveInfo drive in DriveInfo.GetDrives())
@@ -60,11 +71,11 @@ namespace SoftwareReleasePackageBundler
                     ProcessFinished = true;
                     return;
                 }
-                if (File.Exists(usbDrive.RootDirectory + @"\2.0.0.0.0.0.0.zip"))
+                if (File.Exists(usbDrive.RootDirectory + @"\" + FileName + @".zip"))
                 {
-                    File.Delete(usbDrive.RootDirectory + @"\2.0.0.0.0.0.0.zip");
+                    File.Delete(usbDrive.RootDirectory + @"\" + FileName + @".zip");
                 }
-                File.Move(@"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0.zip", usbDrive.RootDirectory + @"\2.0.0.0.0.0.0.zip");
+                File.Move(CreateLocation + @"\" + FileName + @".zip", usbDrive.RootDirectory + @"\" + FileName + @".zip");
                 Console.WriteLine("\nFinished.");
                 ProcessFinished = true;
             }
