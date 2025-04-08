@@ -35,8 +35,9 @@ namespace SoftwareReleasePackageBundler
             try
             {
                 MoveCompiledFolder(@"C:\Users\bdorfner\source\repos\NPAcontrols\APMACShmi\bin", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\bin");
-                MoveCompiledFolder(@"C:\Users\bdorfner\source\repos\APMACS_1\APMACS_1\_Boot\TC", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\TC");
                 MoveCompiledFolder(@"C:\Users\bdorfner\source\repos\NPAcontrols\VersionChangeUtility\bin", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\VersionChangeUtility");
+                CopyDirectory(@"C:\Users\bdorfner\source\repos\APMACS TwinCAT Shell Project\APMACS Shell Project", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\APMACS TwinCAT Shell Project\APMACS Shell Project");
+                File.Copy(@"C:\Users\bdorfner\source\repos\APMACS TwinCAT Shell Project\APMACS Shell Project.sln", @"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0\APMACS TwinCAT Shell Project\APMACS Shell Project.sln", true);
 
                 if (File.Exists(@"C:\Users\bdorfner\Desktop\2.0.0.0.0.0.0.zip"))
                 {
@@ -86,6 +87,36 @@ namespace SoftwareReleasePackageBundler
                 Directory.Delete(path_to_dest_folder, true);
             }
             Directory.Move(path_to_comp_folder, path_to_dest_folder);
+        }
+
+        public static void CopyDirectory(string sourceDir, string destinationDir)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
+
+            // Cache directories before we start copying
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath, true);
+            }
+
+            // Recursively call this method to copy sub-directories
+            foreach (DirectoryInfo subDir in dirs)
+            {
+                string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                CopyDirectory(subDir.FullName, newDestinationDir);
+            }
         }
     }
 }
